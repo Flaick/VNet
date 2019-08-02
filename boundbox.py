@@ -11,18 +11,13 @@ from torch.autograd import Variable
 import torch
 import torch.nn.functional as F
 
-# 新产生的训练数据存储路径
-# if os.path.exists('/data/weihao/KiTS-test-ROI/%s'%dataset) is True:
-#     shutil.rmtree('/data/weihao/KiTS-test-ROI/%s'%dataset)
-# os.mkdir('/data/weihao/KiTS-test-ROI/%s'%dataset)
-# os.mkdir(new_ct_path)
+
 
 start_time = time()
 f = open('/home/qinwang/ZWB-KiTS19-Base/yuankun/test_bbox_yk_single.txt')
 
-for line in f.readlines():  # 依次读取每行
-    ori_line = line.strip().split(',')  # 去掉每行头尾空白
-    # print("读取的数据为: %s" % (line))
+for line in f.readlines(): 
+    ori_line = line.strip().split(',') 
     ct_path = ori_line[0]
     file = "/data/weihao/KiTS2019-3mm-test-clip/%s.nii" % ct_path.split('.')[0]
     bbox = np.array(list(map(int, ori_line[1:])))
@@ -62,7 +57,6 @@ for line in f.readlines():  # 依次读取每行
         print('fuck')
         exit(0)
 
-    # 保存数据
     new_ct = sitk.GetImageFromArray(new_ct_array)
     new_ct.SetDirection(ct.GetDirection())
     new_ct.SetOrigin(ct.GetOrigin())
