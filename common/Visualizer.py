@@ -1,3 +1,6 @@
+'''
+Hao Wei
+'''
 import visdom
 import numpy as np
 import time
