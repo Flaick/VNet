@@ -39,7 +39,6 @@ class DiceLoss(nn.Module):
 
         organ_target = organ_target.cuda()
 
-        # 璁＄畻绗竴闃舵鐨刲oss
         return 1-get_dice(pred, organ_target).mean()
 
 class DiceLoss_Focal(nn.Module):
@@ -61,7 +60,6 @@ class DiceLoss_Focal(nn.Module):
 
         organ_target = organ_target.cuda()
 
-        # 计算第一阶段的loss
         pt_1 = get_dice(pred, organ_target).mean()
         gamma = 0.75
         return torch.pow((2-pt_1), gamma)
