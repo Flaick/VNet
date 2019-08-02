@@ -1,9 +1,3 @@
-#
-'''
-Author: Hao Wei
-Date: 2019/06/03
-Function:
-'''
 import torch
 import numpy as np
 import config
