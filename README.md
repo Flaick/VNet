@@ -29,3 +29,5 @@ Results of Phase1:
 ![image](https://github.com/Flaick/VNet/blob/master/src/re1.jpg)            
 Results of Phase2:       
 ![image](https://github.com/Flaick/VNet/blob/master/src/re2.jpg)
+# boundbox.py
+Get a (384,240,80) bounding box from coarse_bbox.txt(generate from the Phase)
