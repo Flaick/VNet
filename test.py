@@ -1,6 +1,4 @@
-"""
-训练脚本
-"""
+
 import os
 os.environ['CUDA_VISIBLE_DEVICES'] = '0'
 import numpy as np
@@ -68,7 +66,7 @@ with torch.no_grad():
         glob_cube = glob_cube.unsqueeze(dim=0)
 
 
-        # 处理完毕，将array转换为tensor
+
         start_slice = 0
         end_slice = start_slice + slice_number - 1 #31
         ct_array_list = [] 
@@ -78,7 +76,7 @@ with torch.no_grad():
             start_slice = start_slice + interval #4
             end_slice = start_slice + slice_number - 1 #47
 
-        # 当无法整除的时候反向取最后一个block
+
         if end_slice is not image_array.shape[2] - 1 + slice_number:
             count = image_array.shape[2] - start_slice #count is slice number of last cube
             ct_array_list.append(image_array[:,:,-slice_number:])
@@ -106,7 +104,7 @@ with torch.no_grad():
             #print(start_slice1,end_slice1,ind)
 
 
-        # 当无法整除的时候反向取最后一个block
+
         if end_slice1 is not res_numpy.shape[2] - 1 + slice_number:
             ct_tensor = torch.FloatTensor(ct_array_list[-1]).cuda()
             ct_tensor = ct_tensor.permute((2, 0, 1))
