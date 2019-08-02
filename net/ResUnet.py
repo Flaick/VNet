@@ -1,9 +1,8 @@
 """
-ResUNet整体上网络结构基于VNet，做出的修改如下：
-将原本555的卷积核换成了333
-在除了第一个和最后一个block中添加了dropout
-去掉了编码器部分的最后一个16倍降采样的stage
-为了弥补这么做带来的感受野的损失，在编码器的最后两个stage加入了混合空洞卷积
+The overall network structure of ResUNet is based on VNet and the modifications are as follows:
+Replace the original 555 convolution kernel with 333
+Added dropout except the first and last block
+Removed the last 16x downsampled stage of the encoder section
 """
 import torch
 import numpy as np
@@ -14,16 +13,13 @@ import config
 os.environ['CUDA_VISIBLE_DEVICES'] = '3'
 
 
-# 定义单个3D FCN
+# Single 3D FCN
 class ResUNet(nn.Module):
-    """
-    共9332094个可训练的参数, 九百三十万左右
-    """
     def __init__(self, training, inchannel, stage, dropout_rate = 0.3, withLogits = False):
         """
-        :param training: 标志网络是属于训练阶段还是测试阶段
-        :param inchannel 网络最开始的输入通道数量
-        :param stage 标志网络属于第一阶段，还是第二阶段
+        :param training: is training or testing
+        :param inchannel 
+        :param stage stage1 or stage2
         :param num_organ: the numbers without the background class
         :param withLogits: whether the output should be processed by the activation (softmax)
         """
@@ -190,10 +186,10 @@ class ResUNet(nn.Module):
 
         outputs = self.map(outputs)
 
-        # 返回概率图
+        # return a probability map
         return outputs
 
-# 定义最终的级连3D FCN
+# define the final 3D FCn
 class StageNet(nn.Module):
     def __init__(self, training, detach = False):
         super().__init__()
@@ -204,20 +200,12 @@ class StageNet(nn.Module):
         self.stage2 = ResUNet(training=training, inchannel=config.num_class + 1, stage='stage2')#,num_organ=config.num_class-1)
 
     def forward(self, inputs, cube_glob, start_slice, end_slice):
-        """
-        首先将输入数据在轴向上缩小一倍，然后送入第一阶段网络中
-        得到一个粗糙尺度下的分割结果
-        然后将原始尺度大小的数据与第一步中得到的分割结果进行拼接，共同送入第二阶段网络中
-        得到最终的分割结果
-        共18656348个可训练的参数，一千八百万左右
-        """
         cube_glob = cube_glob.float()
         shape = cube_glob.shape # [1,1,80,384, 240]
-        # 首先将输入缩小一倍
+        # Resize the input
         # inputs_stage1 = F.upsample(inputs, (48, 128, 128), mode='trilinear')
         inputs_stage1 = nn.functional.interpolate(cube_glob, (shape[2], shape[3]//2, shape[4]//2), mode='trilinear', align_corners=True)# [1,1,80,192, 120]
 
-        # 得到第一阶段的结果
         #inputs_stage1 = cube_glob
         if self.detach:
             output_stage1 = self.stage1(inputs_stage1.detach())
@@ -227,10 +215,9 @@ class StageNet(nn.Module):
         output_stage1 = F.interpolate(output_stage1, (shape[2], shape[3], shape[4]), mode='trilinear', align_corners=True) # shape[2]
 
         temp = F.softmax(output_stage1, dim=1)
-        # 将第一阶段的结果与原始输入数据进行拼接作为第二阶段的输入
         inputs_stage2 = torch.cat((temp[:,:,start_slice:end_slice + 1,:,:], inputs), dim=1) #[1, 4, 32, 384, 240]
 
-        # 得到第二阶段的结果
+
         output_stage2 = self.stage2(inputs_stage2) # [1, 3, 32, 384, 240]
 
         if self.training is True:
@@ -239,7 +226,7 @@ class StageNet(nn.Module):
             return output_stage1, output_stage2
 
 
-# 网络参数初始化函数
+
 def init(module):
     if isinstance(module, nn.Conv3d) or isinstance(module, nn.ConvTranspose3d):
         nn.init.kaiming_normal_(module.weight.data, 0.25)
@@ -250,7 +237,6 @@ if __name__ == '__main__':
     net = DeepResUNet(training=True, inchannel=1, stage='stage1')
     net.apply(init)
 
-    # 输出数据维度检查
     net = net.cuda()
     data = torch.randn((1, 1, 32, 384, 240)).cuda()
 
@@ -260,7 +246,6 @@ if __name__ == '__main__':
     for item in res:
         print(item.size())
 
-    # 计算网络参数
     num_parameter = .0
     for item in net.modules():
 
