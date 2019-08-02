@@ -106,7 +106,7 @@ class CTDataLoader(Dataset):
         #         'the range of file {} should be [0,num_class-1], but min {}--max{}'.format(image_path, label_array.min(),label_array.max())
         _, _, _, _, z_min, z_max = self.getBoundbox(label_glob)
         if self.slice_number is not None:
-            # 在slice平面内随机选取self.slice_number 张slice
+            # sample the tensor only in axis Z, output (x,y,slice_number)
             start_slice = random.randint(max(z_min - 16,0), min(max(z_max-8, z_min),label_glob.shape[2]-self.slice_number))#(0, image_array.shape[-1] -self.slice_number)
             end_slice = start_slice + self.slice_number - 1
             # print(start_slice, end_slice, label_glob.shape[2])
@@ -119,7 +119,7 @@ class CTDataLoader(Dataset):
             start_slice = 0
             end_slice = 0
 
-        # 处理完毕，将array转换为tensor
+        # array to tensor
 
         image_array = torch.FloatTensor(image_array).unsqueeze(0) # [1, 384, 240, 80]
         image_array = image_array / 250.0 # rescale the range of intensity
