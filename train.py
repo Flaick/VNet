@@ -119,12 +119,12 @@ def validatation_for_epoch(epoch, net, viz, metricer):
                 start_slice = start_slice + interval  # 4
                 end_slice = start_slice + slice_number - 1  # 47
 
-            # 当无法整除的时候反向取最后一个block
+            # Get the last block when it is not divisible
             if end_slice is not cube_glob_tensor.shape[2] - 1 + slice_number:
                 ct_array_list.append(cube_glob_tensor[:, :, -slice_number:, :, :])
             # print('outputs_list',outputs_list)
 
-            # 进行拼接
+            # Start to cat
             start_slice1 = 0
             end_slice1 = start_slice1 + slice_number - 1  # 31
             ind_1 = 0
@@ -144,7 +144,7 @@ def validatation_for_epoch(epoch, net, viz, metricer):
                 ind_1 = ind_1 + 1
                 # print(start_slice1,end_slice1,ind)
 
-            # 当无法整除的时候反向取最后一个block
+            # when it is not divisible
             if end_slice1 is not res_tensor.shape[2] - 1 + slice_number:
                 ct_tensor = ct_array_list[-1]
                 '''StageNet'''
@@ -271,7 +271,6 @@ if __name__ == '__main__':
         val_dice = validatation_for_epoch(epoch, net, viz, metricer)
         net.train()
         # 每10个epoch evaluate 一次 model
-        # 网络模型的命名方式为：epoch轮数+当前minibatch的loss+本轮epoch的平均loss
         if val_dice[1] > current_dice: # Focus on the dice of tumor
             current_dice = val_dice[1]
             kidney_dice = val_dice[0]
